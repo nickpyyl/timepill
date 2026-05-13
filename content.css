@@ -1,0 +1,377 @@
+.ctc-bubble {
+  --timepill-pill-bg: rgba(255, 255, 255, 0.98);
+  --timepill-pill-border: rgba(17, 24, 39, 0.08);
+  --timepill-pill-shadow: rgba(17, 24, 39, 0.1);
+  --timepill-pill-text: #20242d;
+  position: fixed;
+  z-index: 2147483647;
+  max-width: min(520px, calc(100vw - 24px));
+  padding: 7px 12px;
+  border: 1px solid var(--timepill-pill-border);
+  border-radius: 999px;
+  background: var(--timepill-pill-bg);
+  box-shadow: 0 8px 22px var(--timepill-pill-shadow);
+  color: var(--timepill-pill-text);
+  font: 500 12px/1.25 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  pointer-events: none;
+  left: 0;
+  top: 0;
+}
+
+.ctc-bubble[data-hidden="true"] {
+  display: none;
+}
+
+.ctc-bubble__source {
+  color: #737373;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+  white-space: nowrap;
+}
+
+.ctc-bubble__result {
+  color: var(--timepill-pill-text);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.ctc-bubble__results {
+  display: grid;
+  gap: 5px;
+  animation: ctc-bubble-in 90ms ease-out;
+  transform-origin: center;
+}
+
+.ctc-bubble__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ctc-bubble__row--compact {
+  color: var(--timepill-pill-text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.ctc-bubble__dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: #a8a8a8;
+  flex: 0 0 auto;
+}
+
+@keyframes ctc-bubble-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.timepill-settings {
+  --timepill-window-bg: #fcfcfd;
+  --timepill-surface-bg: #ffffff;
+  --timepill-text: #050505;
+  --timepill-muted: #818181;
+  --timepill-muted-strong: #858585;
+  --timepill-border: rgba(17, 24, 39, 0.16);
+  --timepill-menu-border: rgba(17, 24, 39, 0.12);
+  --timepill-hover-bg: #f0f0f2;
+  --timepill-divider: #ededee;
+  --timepill-shadow: rgba(17, 24, 39, 0.045);
+  --timepill-menu-shadow: rgba(17, 24, 39, 0.075);
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2147483647;
+  width: 260px;
+  padding: 14px;
+  border: 0;
+  border-radius: 26px;
+  background: var(--timepill-window-bg);
+  color: var(--timepill-text);
+  color-scheme: light dark;
+  font: 400 13px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 0.5px var(--timepill-border),
+    0 12px 26px var(--timepill-shadow);
+  animation: timepill-settings-in 90ms ease-out;
+}
+
+.timepill-settings[hidden] {
+  display: none;
+}
+
+.timepill-settings__controls {
+  display: grid;
+  position: relative;
+  border-radius: 18px;
+  background: var(--timepill-surface-bg);
+  box-shadow:
+    inset 0 0 0 0.5px var(--timepill-border),
+    0 6px 14px var(--timepill-shadow);
+  padding: 0 12px;
+}
+
+.timepill-settings--open .timepill-settings__controls {
+  position: static;
+}
+
+.timepill-settings__picker {
+  position: relative;
+}
+
+.timepill-settings--open .timepill-settings__picker {
+  position: static;
+}
+
+.timepill-settings__trigger {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--timepill-text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.timepill-settings__trigger span {
+  color: var(--timepill-muted);
+  font-weight: 400;
+  margin-right: 8px;
+}
+
+.timepill-settings__trigger strong {
+  overflow: hidden;
+  font-weight: 400;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timepill-settings__trigger svg {
+  transition: transform 120ms ease-out;
+}
+
+.timepill-settings__trigger[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.timepill-settings__list {
+  position: absolute;
+  z-index: 2;
+  left: -14px;
+  right: -14px;
+  top: 100%;
+  display: grid;
+  gap: 1.5px;
+  max-height: 194px;
+  overflow: auto;
+  border: 0.5px solid var(--timepill-menu-border);
+  border-radius: 16px;
+  background: var(--timepill-surface-bg);
+  box-shadow:
+    inset 0 0 0 0.5px var(--timepill-border),
+    0 8px 18px var(--timepill-menu-shadow);
+  padding: 7px 5px 5px;
+  animation: timepill-settings-in 90ms ease-out;
+}
+
+.timepill-settings--open .timepill-settings__list {
+  left: 12px;
+  right: 12px;
+  top: 58px;
+  bottom: 12px;
+  max-height: none;
+  border-radius: 18px;
+}
+
+.timepill-settings__list[hidden] {
+  display: none;
+}
+
+.timepill-settings__control-divider {
+  height: 1px;
+  background-image: linear-gradient(to right, var(--timepill-divider) 50%, transparent 50%);
+  background-size: 12px 1px;
+}
+
+.timepill-settings__toggle {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--timepill-muted);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.timepill-settings--open .timepill-settings__control-divider,
+.timepill-settings--open .timepill-settings__toggle,
+.timepill-settings--open .timepill-settings__intro {
+  visibility: hidden;
+}
+
+.timepill-settings__switch {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: #d8d8dc;
+  transition: background 120ms ease-out;
+}
+
+.timepill-settings__switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(17, 24, 39, 0.16);
+  transition: transform 120ms ease-out;
+}
+
+.timepill-settings__toggle[aria-checked="true"] .timepill-settings__switch {
+  background: #050505;
+}
+
+.timepill-settings__toggle[aria-checked="true"] .timepill-settings__switch::after {
+  transform: translateX(14px);
+}
+
+.timepill-settings__option {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--timepill-text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.timepill-settings__option:hover,
+.timepill-settings__option[aria-selected="true"] {
+  background: var(--timepill-hover-bg);
+}
+
+.timepill-settings__option-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+}
+
+.timepill-settings__option-meta {
+  color: var(--timepill-muted-strong);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.timepill-settings__intro {
+  margin: 18px 6px 18px;
+  color: var(--timepill-muted);
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.timepill-settings__brand {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  color: var(--timepill-muted);
+  font-weight: 400;
+  text-align: center;
+  text-decoration: none;
+}
+
+.timepill-settings__brand img {
+  width: 76px;
+  height: auto;
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ctc-bubble {
+    --timepill-pill-bg: rgba(31, 31, 34, 0.98);
+    --timepill-pill-border: rgba(255, 255, 255, 0.12);
+    --timepill-pill-shadow: rgba(0, 0, 0, 0.28);
+    --timepill-pill-text: #f4f4f5;
+  }
+
+  .timepill-settings {
+    --timepill-window-bg: #1f1f22;
+    --timepill-surface-bg: #2a2a2d;
+    --timepill-text: #f4f4f5;
+    --timepill-muted: #a4a4aa;
+    --timepill-muted-strong: #a9a9af;
+    --timepill-border: rgba(255, 255, 255, 0.12);
+    --timepill-menu-border: rgba(255, 255, 255, 0.1);
+    --timepill-hover-bg: #36363a;
+    --timepill-divider: #3a3a3f;
+    --timepill-shadow: rgba(0, 0, 0, 0.16);
+    --timepill-menu-shadow: rgba(0, 0, 0, 0.18);
+  }
+
+  .timepill-settings__switch {
+    background: #4a4a50;
+  }
+
+  .timepill-settings__toggle[aria-checked="true"] .timepill-settings__switch {
+    background: #f4f4f5;
+  }
+
+  .timepill-settings__toggle[aria-checked="true"] .timepill-settings__switch::after {
+    background: #1f1f22;
+  }
+
+  .timepill-settings__brand img {
+    filter: invert(1);
+  }
+}
+
+@keyframes timepill-settings-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

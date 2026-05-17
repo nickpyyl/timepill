@@ -1,0 +1,17 @@
+<svg width="1280" height="800" viewBox="0 0 1280 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="800" fill="#F7F7F8"/>
+  <rect x="120" y="92" width="1040" height="616" rx="28" fill="#FFFFFF" stroke="#DFE3E8"/>
+  <text x="180" y="168" fill="#6C7A89" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="28" font-weight="600">Messages</text>
+  <line x1="180" y1="210" x2="1100" y2="210" stroke="#EDF0F3"/>
+  <rect x="594" y="254" width="426" height="76" rx="38" fill="#1D9BF0"/>
+  <text x="632" y="302" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="28" font-weight="500">Can do 9 AM PST</text>
+  <rect x="212" y="414" width="706" height="128" rx="36" fill="#EEF1F4"/>
+  <text x="252" y="463" fill="#101820" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="28" font-weight="500">Would either of these times (PST) work?</text>
+  <text x="252" y="505" fill="#101820" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="28" font-weight="500">- 9-9:30 AM</text>
+  <text x="252" y="547" fill="#101820" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="28" font-weight="500">- 11-11:30 AM</text>
+  <rect x="200" y="348" width="620" height="58" rx="29" fill="#FFFFFF" stroke="#E1E3E8"/>
+  <text x="236" y="385" fill="#737373" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="22" font-weight="500">6 PM - 6:30 PM CET</text>
+  <circle cx="504" cy="376" r="3" fill="#A8A8A8"/>
+  <text x="526" y="385" fill="#171923" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="22" font-weight="600">8 PM - 8:30 PM CET</text>
+  <text x="500" y="666" fill="#050505" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="44" font-weight="800">timepill</text>
+</svg>

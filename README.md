@@ -26,6 +26,8 @@ Select text like `8 PM CET`, `9 AM PST`, `pst 6 AM`, `9 AM New York`, or a short
 
 timepill runs locally in your browser. It does not collect analytics, does not use a server, and does not send selected text anywhere.
 
+See [PRIVACY.md](PRIVACY.md) for the full privacy policy.
+
 ## Permissions
 
 - `storage`: saves your target timezone and 24-hour time preference.

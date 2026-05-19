@@ -193,9 +193,39 @@ const cases = [
     expected: ["6 PM CET", "8:30 PM CET"]
   },
   {
+    name: "timezone in context with shared meridiem standalone times",
+    text: "Would either of these times (PST) work for you? 9 or 11:30 AM",
+    expected: ["6 PM CET", "8:30 PM CET"]
+  },
+  {
     name: "timezone before contextual standalone 24-hour times",
     text: "PST options: 09:00 or 11:30",
     expected: ["6 PM CET", "8:30 PM CET"]
+  },
+  {
+    name: "real scheduling list with commas and shared meridiem",
+    text: "I can do 9, 10, or 11 AM PST on Thursday",
+    expected: ["6 PM CET", "7 PM CET", "8 PM CET"]
+  },
+  {
+    name: "real scheduling list with explicit meridiem items",
+    text: "Free tomorrow at 9am, 10am, or 11am PT",
+    expected: ["6 PM CET", "7 PM CET", "8 PM CET"]
+  },
+  {
+    name: "real scheduling slash-separated choices",
+    text: "Can do 2/4 PM ET if either works",
+    expected: ["8 PM CET", "10 PM CET"]
+  },
+  {
+    name: "real mixed standalone and range choices",
+    text: "Would 9 AM or 11-11:30 AM PST work?",
+    expected: ["6 PM CET", "8 PM CET - 8:30 PM CET"]
+  },
+  {
+    name: "real mixed timezone choices",
+    text: "Could do 9 AM PST or 10 AM EST",
+    expected: ["6 PM CET", "4 PM CET"]
   },
   {
     name: "city trailing full name",
@@ -226,6 +256,21 @@ const cases = [
     name: "city contextual standalone times",
     text: "Could you do New York time? 9 AM or 11:30 AM",
     expected: ["3 PM CET", "5:30 PM CET"]
+  },
+  {
+    name: "city contextual shared meridiem choices",
+    text: "Could you do New York time? 9 or 11:30 AM",
+    expected: ["3 PM CET", "5:30 PM CET"]
+  },
+  {
+    name: "city contextual bullet list",
+    text: "London time works for me:\n- 14:00\n- 16:30",
+    expected: ["3 PM CET", "5:30 PM CET"]
+  },
+  {
+    name: "real mixed city choices",
+    text: "Could do 9 AM New York or 10 AM London",
+    expected: ["3 PM CET", "11 AM CET"]
   },
   {
     name: "city in sentence with explicit time",
@@ -276,6 +321,16 @@ const cases = [
     name: "utc offset",
     text: "10:00 UTC+2",
     expected: ["10 AM CET"]
+  },
+  {
+    name: "real no-timezone scheduling text rejected",
+    text: "Would either of these times work for you? 9 AM or 11:30 AM",
+    expected: []
+  },
+  {
+    name: "real non-scheduling numbered text rejected",
+    text: "Version 9, 10, or 11 AM notes without a timezone",
+    expected: []
   },
   {
     name: "invalid time rejected",

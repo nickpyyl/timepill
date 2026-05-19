@@ -7,7 +7,7 @@ This file contains the suggested Chrome Web Store listing, privacy answers, perm
 Upload:
 
 ```text
-dist/timepill-1.0.10.zip
+dist/timepill-1.0.11.zip
 ```
 
 The package should contain only the extension runtime files, not Git metadata, source-control files, local ZIPs, or test files.
@@ -179,7 +179,7 @@ swift -module-cache-path /private/tmp/timepill-swift-module-cache scripts/make-s
 
 1. Open the Chrome Developer Dashboard.
 2. Add a new item.
-3. Upload `dist/timepill-1.0.10.zip`.
+3. Upload `dist/timepill-1.0.11.zip`.
 4. Fill Store Listing, Privacy, Distribution, and Test Instructions.
 5. Upload the required images.
 6. Submit for review.

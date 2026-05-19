@@ -1,10 +1,10 @@
 (function () {
   "use strict";
 
-  if (window.__clickTimeConverterVersion === "1.0.10") {
+  if (window.__clickTimeConverterVersion === "1.0.11") {
     return;
   }
-  window.__clickTimeConverterVersion = "1.0.10";
+  window.__clickTimeConverterVersion = "1.0.11";
 
   const STORAGE_KEY = "ctcSettings";
   const DEFAULT_SETTINGS = {
@@ -185,7 +185,7 @@
   const ZONE_TIME_RE = new RegExp(`\\(?\\s*${ZONE_PATTERN}\\s*\\)?\\s*(?:-|–|—|at|:)?\\s*(?:${DATE_PREFIX_PATTERN}\\s+)?${TIME_PATTERN}`, "gi");
   const TIME_CITY_RE = new RegExp(`(?:${DATE_CONTEXT_PATTERN}\\s+)?${TIME_PATTERN}\\s*(?:-|–|—|at|in|for|:)?\\s*\\(?\\s*${CITY_PATTERN}\\s*\\)?`, "gi");
   const CITY_TIME_RE = new RegExp(`\\(?\\s*${CITY_PATTERN}\\s*\\)?\\s*(?:-|–|—|at|in|for|:)?\\s*(?:${DATE_CONTEXT_PATTERN}\\s+)?${TIME_PATTERN}`, "gi");
-  const TIME_RANGE_RE = /\b(\d{1,2}(?::\d{2})?)\s*(am|pm)?\s*(?:-|–|—|to)\s*(\d{1,2}(?::\d{2})?)\s*(am|pm)?\b/gi;
+  const TIME_RANGE_RE = /\b(\d{1,2}(?::\d{2})?)[ \t]*(am|pm)?(?:[ \t]*(?:-|–|—)[ \t]*|\s+to\s+)(\d{1,2}(?::\d{2})?)[ \t]*(am|pm)?\b/gi;
   const TIME_SINGLE_RE = /\b(\d{1,2}(?::\d{2})?)\s*(am|pm)\b|\b(\d{1,2}:\d{2})\b/gi;
 
   let settings = { ...DEFAULT_SETTINGS };
@@ -476,20 +476,24 @@
   }
 
   function convertText(text) {
+    const explicitTimes = convertExplicitTimes(text);
+    if (hasMultipleSourceZones(explicitTimes)) {
+      return explicitTimes.map((item) => item.conversion).slice(0, 5);
+    }
+
     const contextualTimes = convertContextualTimes(text);
     if (contextualTimes.length) return contextualTimes;
 
-    const explicitMatch = findBestMatch(text);
-    if (!explicitMatch) return [];
-
-    const conversion = convertTimeText(explicitMatch, findContextDateParts(text));
-    return conversion ? [conversion] : [];
+    return explicitTimes.map((item) => item.conversion).slice(0, 1);
   }
 
   function convertTimeText(text, fallbackDateParts = null) {
     const parsed = parseTimeText(text, fallbackDateParts);
     if (!parsed) return null;
+    return convertParsedTime(parsed);
+  }
 
+  function convertParsedTime(parsed) {
     const targetTimeZone = settings.targetTimeZone === "local"
       ? Intl.DateTimeFormat().resolvedOptions().timeZone
       : settings.targetTimeZone;
@@ -502,6 +506,45 @@
       targetTimeZone,
       iso: new Date(parsed.utcMillis).toISOString()
     };
+  }
+
+  function convertExplicitTimes(text) {
+    const dateParts = findContextDateParts(text);
+    TIME_ZONE_RE.lastIndex = 0;
+    ZONE_TIME_RE.lastIndex = 0;
+    TIME_CITY_RE.lastIndex = 0;
+    CITY_TIME_RE.lastIndex = 0;
+
+    const seen = new Set();
+    const candidates = [
+      ...[...text.matchAll(TIME_ZONE_RE)],
+      ...[...text.matchAll(ZONE_TIME_RE)],
+      ...[...text.matchAll(TIME_CITY_RE)],
+      ...[...text.matchAll(CITY_TIME_RE)]
+    ];
+
+    return candidates
+      .map((match) => {
+        const text = match[0].trim();
+        const index = match.index;
+        const key = `${index}:${text}`;
+        if (seen.has(key)) return null;
+        seen.add(key);
+
+        const parsed = parseTimeText(text, dateParts);
+        if (!parsed) return null;
+        return {
+          index,
+          parsed,
+          conversion: convertParsedTime(parsed)
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.index - b.index);
+  }
+
+  function hasMultipleSourceZones(items) {
+    return new Set(items.map((item) => item.parsed.zoneText)).size > 1;
   }
 
   function convertContextualTimes(text) {
@@ -522,6 +565,13 @@
         index: match.index,
         conversion: convertRangeMatch(match, zoneText, dateParts)
       })),
+      ...[...text.matchAll(TIME_SINGLE_RE)]
+        .filter((match) => !rangeSpans.some((span) => match.index >= span.start && match.index < span.end))
+        .flatMap((match) => getSharedMeridiemPrefixTimes(text, match, rangeSpans)
+          .map((item) => ({
+            index: item.index,
+            conversion: convertSingleClock(item.clockText, item.meridiem, zoneText, dateParts)
+          }))),
       ...[...text.matchAll(TIME_SINGLE_RE)]
         .filter((match) => !rangeSpans.some((span) => match.index >= span.start && match.index < span.end))
         .map((match) => ({
@@ -605,6 +655,10 @@
   function convertSingleTimeMatch(match, zoneText, dateParts) {
     const clockText = match[1] || match[3];
     const meridiem = match[2] ? match[2].toLowerCase() : "";
+    return convertSingleClock(clockText, meridiem, zoneText, dateParts);
+  }
+
+  function convertSingleClock(clockText, meridiem, zoneText, dateParts) {
     const clock = parseClockTime(clockText, meridiem);
     if (!clock) return null;
 
@@ -618,6 +672,28 @@
       targetTimeZone,
       iso: new Date(utcMillis).toISOString()
     };
+  }
+
+  function getSharedMeridiemPrefixTimes(text, match, rangeSpans) {
+    const meridiem = match[2] ? match[2].toLowerCase() : "";
+    if (!meridiem) return [];
+
+    const before = text.slice(0, match.index);
+    const listMatch = before.match(/((?:\b\d{1,2}(?::\d{2})?\s*(?:,|\/|\bor\b|\band\b)\s*)+)(?:\bor\b|\band\b)?\s*$/i);
+    if (!listMatch) return [];
+
+    const listText = listMatch[1];
+    const startIndex = match.index - listMatch[0].length;
+    if (startIndex > 0 && /[A-Za-z]/.test(text[startIndex - 1])) return [];
+
+    return [...listText.matchAll(/\b(\d{1,2}(?::\d{2})?)\b/g)]
+      .map((item) => ({
+        index: startIndex + item.index,
+        clockText: item[1],
+        meridiem
+      }))
+      .filter((item) => parseClockTime(item.clockText, meridiem))
+      .filter((item) => !rangeSpans.some((span) => item.index >= span.start && item.index < span.end));
   }
 
   function parseTimeText(text, fallbackDateParts = null) {

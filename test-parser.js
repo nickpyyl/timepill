@@ -188,6 +188,16 @@ const cases = [
     expected: ["6 PM CET - 6:30 PM CET", "8 PM CET - 8:30 PM CET"]
   },
   {
+    name: "timezone in context with standalone times",
+    text: "Would either of these times (PST) work for you? 9 AM or 11:30 AM",
+    expected: ["6 PM CET", "8:30 PM CET"]
+  },
+  {
+    name: "timezone before contextual standalone 24-hour times",
+    text: "PST options: 09:00 or 11:30",
+    expected: ["6 PM CET", "8:30 PM CET"]
+  },
+  {
     name: "city trailing full name",
     text: "9 AM New York",
     expected: ["3 PM CET"]
@@ -211,6 +221,11 @@ const cases = [
     name: "city contextual ranges",
     text: "Could you do New York time?\n- 9-9:30 AM\n- 11-11:30 AM",
     expected: ["3 PM CET - 3:30 PM CET", "5 PM CET - 5:30 PM CET"]
+  },
+  {
+    name: "city contextual standalone times",
+    text: "Could you do New York time? 9 AM or 11:30 AM",
+    expected: ["3 PM CET", "5:30 PM CET"]
   },
   {
     name: "city in sentence with explicit time",

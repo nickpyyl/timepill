@@ -1,10 +1,10 @@
 (function () {
   "use strict";
 
-  if (window.__clickTimeConverterVersion === "1.0.9") {
+  if (window.__clickTimeConverterVersion === "1.0.10") {
     return;
   }
-  window.__clickTimeConverterVersion = "1.0.9";
+  window.__clickTimeConverterVersion = "1.0.10";
 
   const STORAGE_KEY = "ctcSettings";
   const DEFAULT_SETTINGS = {
@@ -186,6 +186,7 @@
   const TIME_CITY_RE = new RegExp(`(?:${DATE_CONTEXT_PATTERN}\\s+)?${TIME_PATTERN}\\s*(?:-|–|—|at|in|for|:)?\\s*\\(?\\s*${CITY_PATTERN}\\s*\\)?`, "gi");
   const CITY_TIME_RE = new RegExp(`\\(?\\s*${CITY_PATTERN}\\s*\\)?\\s*(?:-|–|—|at|in|for|:)?\\s*(?:${DATE_CONTEXT_PATTERN}\\s+)?${TIME_PATTERN}`, "gi");
   const TIME_RANGE_RE = /\b(\d{1,2}(?::\d{2})?)\s*(am|pm)?\s*(?:-|–|—|to)\s*(\d{1,2}(?::\d{2})?)\s*(am|pm)?\b/gi;
+  const TIME_SINGLE_RE = /\b(\d{1,2}(?::\d{2})?)\s*(am|pm)\b|\b(\d{1,2}:\d{2})\b/gi;
 
   let settings = { ...DEFAULT_SETTINGS };
   let bubble = null;
@@ -475,8 +476,8 @@
   }
 
   function convertText(text) {
-    const contextualRanges = convertContextualRanges(text);
-    if (contextualRanges.length) return contextualRanges;
+    const contextualTimes = convertContextualTimes(text);
+    if (contextualTimes.length) return contextualTimes;
 
     const explicitMatch = findBestMatch(text);
     if (!explicitMatch) return [];
@@ -503,16 +504,36 @@
     };
   }
 
-  function convertContextualRanges(text) {
+  function convertContextualTimes(text) {
     const zoneText = findContextZone(text);
     if (!zoneText) return [];
 
     const dateParts = findContextDateParts(text);
     TIME_RANGE_RE.lastIndex = 0;
+    TIME_SINGLE_RE.lastIndex = 0;
 
-    return [...text.matchAll(TIME_RANGE_RE)]
-      .map((match) => convertRangeMatch(match, zoneText, dateParts))
-      .filter(Boolean)
+    const rangeMatches = [...text.matchAll(TIME_RANGE_RE)];
+    const rangeSpans = rangeMatches.map((match) => ({
+      start: match.index,
+      end: match.index + match[0].length
+    }));
+    const conversions = [
+      ...rangeMatches.map((match) => ({
+        index: match.index,
+        conversion: convertRangeMatch(match, zoneText, dateParts)
+      })),
+      ...[...text.matchAll(TIME_SINGLE_RE)]
+        .filter((match) => !rangeSpans.some((span) => match.index >= span.start && match.index < span.end))
+        .map((match) => ({
+          index: match.index,
+          conversion: convertSingleTimeMatch(match, zoneText, dateParts)
+        }))
+    ];
+
+    return conversions
+      .filter((item) => item.conversion)
+      .sort((a, b) => a.index - b.index)
+      .map((item) => item.conversion)
       .slice(0, 5);
   }
 
@@ -578,6 +599,24 @@
       result,
       targetTimeZone,
       iso: new Date(startUtcMillis).toISOString()
+    };
+  }
+
+  function convertSingleTimeMatch(match, zoneText, dateParts) {
+    const clockText = match[1] || match[3];
+    const meridiem = match[2] ? match[2].toLowerCase() : "";
+    const clock = parseClockTime(clockText, meridiem);
+    if (!clock) return null;
+
+    const utcMillis = getUtcMillis(dateParts, clock, zoneText);
+    if (utcMillis === null) return null;
+
+    const targetTimeZone = getTargetTimeZone();
+    return {
+      source: `${formatClock(clock)} ${zoneText}`,
+      result: formatTimeOnly(utcMillis, targetTimeZone),
+      targetTimeZone,
+      iso: new Date(utcMillis).toISOString()
     };
   }
 

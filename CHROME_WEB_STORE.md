@@ -12,6 +12,8 @@ dist/timepill-1.0.11.zip
 
 The package should contain only the extension runtime files, not Git metadata, source-control files, local ZIPs, or test files.
 
+Before submitting, make sure the latest local commits are pushed to GitHub if you plan to use the GitHub privacy policy URL below.
+
 ## Store listing
 
 Name:
@@ -93,6 +95,12 @@ Data collection:
 Does not collect user data.
 ```
 
+Data types:
+
+```text
+Select none. timepill does not collect personally identifiable information, health information, financial information, authentication information, personal communications, location, web history, user activity, or website content.
+```
+
 Remote code:
 
 ```text
@@ -108,6 +116,12 @@ Use the Chrome Web Store certification checkboxes that confirm:
 - Data is not used for creditworthiness or lending.
 
 timepill does not collect data, so these should be straightforward.
+
+Limited Use statement:
+
+```text
+timepill uses selected text and extension permissions only to provide its single purpose: converting selected time and timezone text inline in the browser. timepill does not transfer user data, use user data for advertising, or allow humans to read user data.
+```
 
 ## Permission justifications
 
@@ -177,9 +191,10 @@ swift -module-cache-path /private/tmp/timepill-swift-module-cache scripts/make-s
 
 ## Submission flow
 
-1. Open the Chrome Developer Dashboard.
-2. Add a new item.
-3. Upload `dist/timepill-1.0.11.zip`.
-4. Fill Store Listing, Privacy, Distribution, and Test Instructions.
-5. Upload the required images.
-6. Submit for review.
+1. Push the latest repository changes so `PRIVACY.md` is available at the public privacy policy URL.
+2. Open the Chrome Developer Dashboard.
+3. Add a new item.
+4. Upload `dist/timepill-1.0.11.zip`.
+5. Fill Store Listing, Privacy, Distribution, and Test Instructions.
+6. Upload the required images.
+7. Submit for review.

@@ -29,6 +29,12 @@ The settings panel includes an optional external link to the author's X profile.
 
 timepill does not share data with third parties.
 
+## Chrome Web Store Limited Use
+
+timepill uses selected text and extension permissions only to provide its single purpose: converting selected time and timezone text inline in the browser.
+
+timepill's use of information received from Chrome extension APIs adheres to the Chrome Web Store User Data Policy, including the Limited Use requirements. timepill does not transfer user data, use user data for advertising, or allow humans to read user data.
+
 ## Contact
 
 For questions about this privacy policy, contact the maintainer through the project repository or the X profile linked in the extension.

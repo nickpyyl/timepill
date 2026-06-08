@@ -178,15 +178,16 @@
   const IANA_ZONE_PATTERN = "[A-Za-z_]+\\/[A-Za-z_\\/-]+";
   const ZONE_PATTERN = `(?:${IANA_ZONE_PATTERN}|(?:UTC|GMT)\\s*[+-]\\s*\\d{1,2}(?::?\\d{2})?|[A-Z]{1,5})`;
   const CITY_PATTERN = `\\b(?:${buildCityPattern()})\\b`;
-  const TIME_PATTERN = "\\d{1,2}(?::\\d{2})?\\s*(?:am|pm|AM|PM)?";
+  const MERIDIEM_PATTERN = "[ap]\\.?\\s*m\\.?";
+  const TIME_PATTERN = `\\d{1,2}(?::\\d{2})?\\s*(?:${MERIDIEM_PATTERN})?`;
   const DATE_PREFIX_PATTERN = "(?:(?:\\d{4}-\\d{1,2}-\\d{1,2})|(?:\\d{1,2}[\\/-]\\d{1,2}(?:[\\/-]\\d{2,4})?)|(?:(?:Jan|January|Feb|February|Mar|March|Apr|April|May|Jun|June|Jul|July|Aug|August|Sep|Sept|September|Oct|October|Nov|November|Dec|December)\\.?\\s+\\d{1,2}(?:,?\\s+\\d{4})?))";
   const DATE_CONTEXT_PATTERN = `(?:${DATE_PREFIX_PATTERN}|tomorrow|(?:sun(?:day)?|mon(?:day)?|tue(?:s|sday)?|wed(?:nesday)?|thu(?:r|rs|rsday)?|fri(?:day)?|sat(?:urday)?))`;
   const TIME_ZONE_RE = new RegExp(`(?:${DATE_PREFIX_PATTERN}\\s+)?${TIME_PATTERN}\\s*(?:-|–|—|at|:)?\\s*\\(?\\s*${ZONE_PATTERN}\\s*\\)?`, "gi");
   const ZONE_TIME_RE = new RegExp(`\\(?\\s*${ZONE_PATTERN}\\s*\\)?\\s*(?:-|–|—|at|:)?\\s*(?:${DATE_PREFIX_PATTERN}\\s+)?${TIME_PATTERN}`, "gi");
   const TIME_CITY_RE = new RegExp(`(?:${DATE_CONTEXT_PATTERN}\\s+)?${TIME_PATTERN}\\s*(?:-|–|—|at|in|for|:)?\\s*\\(?\\s*${CITY_PATTERN}\\s*\\)?`, "gi");
   const CITY_TIME_RE = new RegExp(`\\(?\\s*${CITY_PATTERN}\\s*\\)?\\s*(?:-|–|—|at|in|for|:)?\\s*(?:${DATE_CONTEXT_PATTERN}\\s+)?${TIME_PATTERN}`, "gi");
-  const TIME_RANGE_RE = /\b(\d{1,2}(?::\d{2})?)[ \t]*(am|pm)?(?:[ \t]*(?:-|–|—)[ \t]*|\s+to\s+)(\d{1,2}(?::\d{2})?)[ \t]*(am|pm)?\b/gi;
-  const TIME_SINGLE_RE = /\b(\d{1,2}(?::\d{2})?)\s*(am|pm)\b|\b(\d{1,2}:\d{2})\b/gi;
+  const TIME_RANGE_RE = new RegExp(`\\b(\\d{1,2}(?::\\d{2})?)[ \\t]*(?:(${MERIDIEM_PATTERN}))?(?:[ \\t]*(?:-|–|—)[ \\t]*|\\s+to\\s+)(\\d{1,2}(?::\\d{2})?)[ \\t]*(?:(${MERIDIEM_PATTERN}))?(?=\\s|$|[.,;!?\\)])`, "gi");
+  const TIME_SINGLE_RE = new RegExp(`\\b(\\d{1,2}(?::\\d{2})?)\\s*(${MERIDIEM_PATTERN})(?=\\s|$|[.,;!?\\)])|\\b(\\d{1,2}:\\d{2})\\b`, "gi");
 
   let settings = { ...DEFAULT_SETTINGS };
   let bubble = null;
@@ -627,8 +628,8 @@
   }
 
   function convertRangeMatch(match, zoneText, dateParts) {
-    const endMeridiem = (match[4] || match[2] || "").toLowerCase();
-    const startMeridiem = (match[2] || endMeridiem).toLowerCase();
+    const endMeridiem = normalizeMeridiem(match[4] || match[2]);
+    const startMeridiem = normalizeMeridiem(match[2]) || endMeridiem;
     const startClock = parseClockTime(match[1], startMeridiem);
     const endClock = parseClockTime(match[3], endMeridiem);
     if (!startClock || !endClock) return null;
@@ -654,7 +655,7 @@
 
   function convertSingleTimeMatch(match, zoneText, dateParts) {
     const clockText = match[1] || match[3];
-    const meridiem = match[2] ? match[2].toLowerCase() : "";
+    const meridiem = normalizeMeridiem(match[2]);
     return convertSingleClock(clockText, meridiem, zoneText, dateParts);
   }
 
@@ -675,7 +676,7 @@
   }
 
   function getSharedMeridiemPrefixTimes(text, match, rangeSpans) {
-    const meridiem = match[2] ? match[2].toLowerCase() : "";
+    const meridiem = normalizeMeridiem(match[2]);
     if (!meridiem) return [];
 
     const before = text.slice(0, match.index);
@@ -733,14 +734,14 @@
       ? normalized.slice(sourceMatch[0].length).replace(/^[-,\s]+/, "").trim()
       : stripSourceSeparator(normalized.slice(0, trailingMatch.index));
     const timeMatch = usesLeadingSource
-      ? timeSide.match(/(?:(.*?)\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i)
-      : timeSide.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i);
+      ? timeSide.match(new RegExp(`(?:(.*?)\\s+)?(\\d{1,2})(?::(\\d{2}))?\\s*(${MERIDIEM_PATTERN})?$`, "i"))
+      : timeSide.match(new RegExp(`(\\d{1,2})(?::(\\d{2}))?\\s*(${MERIDIEM_PATTERN})?$`, "i"));
     if (!timeMatch) return null;
 
     const timeOffset = usesLeadingSource ? 1 : 0;
     let hour = Number(timeMatch[1 + timeOffset]);
     const minute = timeMatch[2 + timeOffset] ? Number(timeMatch[2 + timeOffset]) : 0;
-    const meridiem = timeMatch[3 + timeOffset] ? timeMatch[3 + timeOffset].toLowerCase() : "";
+    const meridiem = normalizeMeridiem(timeMatch[3 + timeOffset]);
     if (minute > 59 || hour > 23 || (meridiem && hour > 12)) return null;
     if (meridiem === "pm" && hour !== 12) hour += 12;
     if (meridiem === "am" && hour === 12) hour = 0;
@@ -760,6 +761,13 @@
   function normalizeZoneText(zone) {
     const zoneRaw = zone.replace(/\s+/g, "");
     return zoneRaw.includes("/") ? zoneRaw : zoneRaw.toUpperCase();
+  }
+
+  function normalizeMeridiem(value) {
+    const compact = String(value || "")
+      .toLowerCase()
+      .replace(/[^apm]/g, "");
+    return compact === "am" || compact === "pm" ? compact : "";
   }
 
   function stripSourceSeparator(text) {

@@ -133,6 +133,16 @@ const cases = [
     expected: ["3 PM CET"]
   },
   {
+    name: "dotted meridiem trailing timezone",
+    text: "10 a.m. PT",
+    expected: ["7 PM CET"]
+  },
+  {
+    name: "dotted meridiem leading timezone",
+    text: "PT 10 a.m.",
+    expected: ["7 PM CET"]
+  },
+  {
     name: "parenthesized trailing timezone",
     text: "6 AM (PST)",
     expected: ["3 PM CET"]
@@ -150,6 +160,11 @@ const cases = [
   {
     name: "range with meridiem on both sides",
     text: "9am-10am PST",
+    expected: ["6 PM CET - 7 PM CET"]
+  },
+  {
+    name: "range with dotted meridiem on both sides",
+    text: "9 a.m.-10 a.m. PT",
     expected: ["6 PM CET - 7 PM CET"]
   },
   {

@@ -383,6 +383,33 @@ if (!twentyFourHourPass) {
   console.log(`  actual:   ${JSON.stringify(twentyFourHourActual)}`);
 }
 
+// Compare actual instants so this coverage is independent of today's DST offset.
+const zones = [...new Set([
+  ...Intl.supportedValuesOf("timeZone"),
+  "UTC", "GMT", "Z", "EST", "EDT", "ET", "CST", "CDT", "CT",
+  "MST", "MDT", "MT", "PST", "PDT", "PT", "AKST", "AKDT", "HST",
+  "CET", "CEST", "WET", "WEST", "EET", "EEST", "BST", "IST", "JST",
+  "KST", "AEST", "AEDT", "ACST", "ACDT", "AWST", "NZST", "NZDT",
+  "UTC+05:30", "GMT-04:00", "UTC+12:45"
+])];
+let timezoneChecks = 0;
+for (const zone of zones) {
+  for (const [plain, dotted] of [["AM", "a.m."], ["PM", "p.m."]]) {
+    for (const leading of [false, true]) {
+      const text = (meridiem) => leading
+        ? `${zone} 10 ${meridiem}` : `10 ${meridiem} ${zone}`;
+      const baseline = api.convertText(text(plain)).map((item) => item.iso);
+      const actual = api.convertText(text(dotted)).map((item) => item.iso);
+      timezoneChecks += 1;
+      if (baseline.length !== 1 || JSON.stringify(actual) !== JSON.stringify(baseline)) {
+        failures += 1;
+        console.log(`FAIL timezone parity: ${text(dotted)} (${JSON.stringify(actual)} vs ${JSON.stringify(baseline)})`);
+      }
+    }
+  }
+}
+console.log(`Checked ${timezoneChecks} dotted-time cases across ${zones.length} timezone formats`);
+
 if (failures) {
   process.exitCode = 1;
 }

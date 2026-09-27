@@ -1,10 +1,10 @@
 (function () {
   "use strict";
 
-  if (window.__clickTimeConverterVersion === "1.0.11") {
+  if (window.__clickTimeConverterVersion === "1.0.13") {
     return;
   }
-  window.__clickTimeConverterVersion = "1.0.11";
+  window.__clickTimeConverterVersion = "1.0.13";
 
   const STORAGE_KEY = "ctcSettings";
   const DEFAULT_SETTINGS = {
@@ -536,11 +536,15 @@
         if (!parsed) return null;
         return {
           index,
+          end: match.index + match[0].length,
           parsed,
           conversion: convertParsedTime(parsed)
         };
       })
       .filter(Boolean)
+      .filter((item, index, items) => !items.some((other, otherIndex) =>
+        otherIndex !== index && other.index <= item.index && other.end >= item.end &&
+        (other.index < item.index || other.end > item.end)))
       .sort((a, b) => a.index - b.index);
   }
 
@@ -553,6 +557,9 @@
     if (!zoneText) return [];
 
     const dateParts = findContextDateParts(text);
+    // Offset minutes belong to the timezone, not to the meeting-slot list.
+    text = text.replace(/\b(?:UTC|GMT)\s*[+-]\s*\d{1,2}(?::?\d{2})?/gi,
+      (offset) => " ".repeat(offset.length));
     TIME_RANGE_RE.lastIndex = 0;
     TIME_SINGLE_RE.lastIndex = 0;
 

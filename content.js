@@ -1,10 +1,10 @@
 (function () {
   "use strict";
 
-  if (window.__clickTimeConverterVersion === "1.0.13") {
+  if (window.__clickTimeConverterVersion === "1.0.17") {
     return;
   }
-  window.__clickTimeConverterVersion = "1.0.13";
+  window.__clickTimeConverterVersion = "1.0.17";
 
   const STORAGE_KEY = "ctcSettings";
   const DEFAULT_SETTINGS = {
@@ -214,7 +214,6 @@
   document.addEventListener("mouseup", (event) => {
     lastSelectionPoint = { x: event.clientX, y: event.clientY };
     scheduleSelectionConversion();
-    scheduleSelectionConversion(320);
   }, true);
   document.addEventListener("keyup", scheduleSelectionConversion, true);
   document.addEventListener("touchend", (event) => {
@@ -223,7 +222,6 @@
       lastSelectionPoint = { x: touch.clientX, y: touch.clientY };
     }
     scheduleSelectionConversion();
-    scheduleSelectionConversion(420);
   }, true);
   document.addEventListener("contextmenu", (event) => {
     lastContextPoint = {
@@ -251,9 +249,12 @@
     };
   }
 
-  function scheduleSelectionConversion(delay = 120) {
-    window.clearTimeout(selectionTimer);
-    selectionTimer = window.setTimeout(handleSelectionConversion, delay);
+  function scheduleSelectionConversion() {
+    if (selectionTimer) return;
+    selectionTimer = window.requestAnimationFrame(() => {
+      selectionTimer = 0;
+      handleSelectionConversion();
+    });
   }
 
   function scheduleBubbleReposition() {
@@ -344,7 +345,12 @@
     const range = selection.getRangeAt(0);
     const rects = [...range.getClientRects()].filter((rect) => rect.width && rect.height);
     if (rects.length) {
-      return rects[0];
+      return {
+        left: Math.min(...rects.map((rect) => rect.left)),
+        right: Math.max(...rects.map((rect) => rect.right)),
+        top: Math.min(...rects.map((rect) => rect.top)),
+        bottom: Math.max(...rects.map((rect) => rect.bottom))
+      };
     }
 
     const rect = range.getBoundingClientRect();
@@ -1055,9 +1061,10 @@
     const signature = getConversionSignature(items);
     ensureBubble();
 
+    const animatePosition = bubble.dataset.hidden === "false" && Boolean(bubbleSignature);
     bubble.dataset.hidden = "false";
     if (signature === bubbleSignature && bubble.firstChild) {
-      positionBubbleAbove(anchorRect);
+      positionBubbleAbove(anchorRect, animatePosition);
       return;
     }
 
@@ -1087,7 +1094,7 @@
     }
 
     bubble.append(results);
-    positionBubbleAbove(anchorRect);
+    positionBubbleAbove(anchorRect, animatePosition);
   }
 
   function ensureBubble() {
@@ -1107,12 +1114,14 @@
     return result.replace(/\s+([A-Z]{2,5})(?=\s+-)/, "");
   }
 
-  function positionBubbleAbove(anchorRect) {
+  function positionBubbleAbove(anchorRect, animate = false) {
     const margin = 12;
     const gap = 8;
     const anchorCenter = anchorRect.left + (anchorRect.right - anchorRect.left) / 2;
 
-    bubble.style.transform = "translate3d(0, 0, 0)";
+    bubble.style.transition = animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "transform 120ms cubic-bezier(0.2, 0.8, 0.2, 1)"
+      : "none";
     const width = bubble.offsetWidth;
     const height = bubble.offsetHeight;
     const maxLeft = Math.max(margin, window.innerWidth - width - margin);
@@ -1178,6 +1187,11 @@
     const trigger = settingsPanel.querySelector(".timepill-settings__trigger");
     const list = settingsPanel.querySelector(".timepill-settings__list");
     const hourToggle = settingsPanel.querySelector(".timepill-settings__toggle");
+
+    // Prevent host-page wheel handlers from cancelling native list scrolling.
+    list.addEventListener("wheel", (event) => {
+      event.stopPropagation();
+    }, { passive: true });
 
     trigger.addEventListener("click", () => {
       const open = trigger.getAttribute("aria-expanded") === "true";

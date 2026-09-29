@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Editor · timepill showcase</title><link rel="stylesheet" href="showcase.css"></head>
+<body><div class="shell"><header class="topbar"><a class="brand" href="index.html"><img src="../logo.svg" alt="timepill"><span>THE EVERYDAY COLLECTION</span></a><nav aria-label="Showcase"><a href="index.html">Messages</a><a href="email.html">Email</a><a href="notes.html">Plain text</a><a href="schedule.html">Schedule</a><a href="editor.html" aria-current="page">Editor</a></nav></header><main><section class="editor"><header class="view-header"><div><div class="eyebrow">DRAFT</div><h1>Plan the next review</h1></div><span class="tag" id="save-status" role="status">Draft</span></header><div class="editor-body"><label for="subject">Subject</label><input id="subject" value="A time for our next review"><label for="draft">Message</label><textarea id="draft" rows="10" spellcheck="false">Hey Alex,
+
+Could we meet at 10 a.m. PT tomorrow?
+
+I can also do 9 AM New York or 4 PM Europe/London on Wednesday.
+
+Let me know what works for you.</textarea><div class="editable-label" id="quick-label">Quick note</div><div class="editable" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="quick-label">Follow up with the Tokyo team at 10 AM Tokyo. Share the final notes by 18:00 UTC+05:30.</div></div></section></main></div><script>document.querySelectorAll('input,textarea,[contenteditable]').forEach(el=>el.addEventListener('input',()=>{document.querySelector('#save-status').textContent='Edited';}));</script></body></html>
+
